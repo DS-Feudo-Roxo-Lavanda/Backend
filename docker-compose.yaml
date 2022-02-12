@@ -1,0 +1,24 @@
+version: '3'
+services:
+  api-services:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    command: python3 src/app.py
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      FLASK_DEBUG: 1
+  mongo:
+    image: mongo
+    volumes:
+      - mongodb:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    restart: always
+volumes:
+  mongodb:
