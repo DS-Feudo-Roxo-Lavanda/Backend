@@ -1,10 +1,11 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask
+from routes.index import  index_route
+
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return jsonify({'message': 'Hello, World!'})
+
+app.register_blueprint(index_route, url_prefix='/')
 
 if __name__ == '__main__':
     PORT = os.getenv('PORT') if os.getenv('PORT') else 8080
