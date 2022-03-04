@@ -1,24 +1,47 @@
 version: '3'
 services:
-  api-services:
+  app:
+    container_name: 'decision_server'
     build: .
-    volumes:
-      - .:/usr/src/app
-    command: python3 src/app.py
     ports:
-      - "8080:8080"
-    environment:
-      PORT: 8080
-      FLASK_DEBUG: 1
-  mongo:
+        - '5000:5000'
+    volumes:
+        - '.:/app'
+    depends_on:
+      - mongo-db
+    networks:
+      - "my-network"
+
+  mongo-db:
     image: mongo
+    restart: always
     volumes:
       - mongodb:/data/db
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    networks:
+      - "my-network"
+
+  mongo-express:
+    image: mongo-express
     restart: always
+    depends_on:
+      - mongo-db
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_SERVER: mongo-db
+    networks:
+      - "my-network"
+
+networks:
+  my-network:
+      driver: bridge
+
 volumes:
   mongodb:

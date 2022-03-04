@@ -1,11 +1,25 @@
-FROM python:3.8
+FROM ubuntu:latest
 
-WORKDIR /usr/src/app
+ENV TZ=America/Cuiaba
 
-COPY . .
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update -y && \
+    apt-get install -y python3-pip python3-dev && \
+    apt-get install -y cmake
+
+RUN apt-get install 'ffmpeg'\
+    'libsm6'\ 
+    'libxext6'  -y
+
+COPY requirements.txt /app/requirements.txt
+
+WORKDIR /app
 
 RUN pip3 install -r requirements.txt
 
-EXPOSE 8080
+COPY . /app
 
-CMD [ "python3", "src/app.py" ]
+ENTRYPOINT [ "python3" ]
+
+CMD [ "app.py" ]
