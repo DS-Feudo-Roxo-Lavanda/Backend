@@ -10,7 +10,7 @@ app.json_encoder = CustomEncoder
 
 connect_uri = os.environ.get('MONGO_URI') if os.environ.get(
     'MONGO_URI'
-) else 'mongodb://admin:admin@mongo-db:27017/moviesmanager?authSource=admin'
+) else "mongodb+srv://RoxoLavanda:g63e3IkyRkQewVYo@teste.m5o3z.mongodb.net/Meuapp?retryWrites=true&w=majority" #'mongodb://admin:admin@mongo-db:27017/moviesmanager?authSource=admin'
 
 client = pymongo.MongoClient(connect_uri, serverSelectionTimeoutMS=30000)
 

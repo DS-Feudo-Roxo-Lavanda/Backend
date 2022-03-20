@@ -1,3 +1,4 @@
+from telnetlib import STATUS
 from src.utils.CustomEnconder import CustomEncoder
 from flask import jsonify, request
 from bson.json_util import dumps
@@ -20,11 +21,21 @@ class IndexController:
 
         @self.app.route('/user', methods=['POST'])
         def save_user():
-            name = request.get_json().get('name')
+            email = request.get_json().get('email')
             username = request.get_json().get('username')
+            password = request.get_json().get('password')
+
+            if email == '':
+                return jsonify("E-mail não pode ser vazio.", status=400)
+            
+            if username == '':
+                return jsonify("Usuário não pode ser vazio.", status=400)
+
+            if password == '':
+                return jsonify("Senha não pode ser vazia.", status=400)  
 
             self.client.db.user.insert_one(
-                {'name': name, 'username': username}
+                {'email': email, 'username': username, 'password': password}
             )
 
             return jsonify({
