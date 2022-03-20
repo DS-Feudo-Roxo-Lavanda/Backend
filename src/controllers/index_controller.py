@@ -25,14 +25,22 @@ class IndexController:
             username = request.get_json().get('username')
             password = request.get_json().get('password')
 
-            if email == '':
-                return jsonify("E-mail não pode ser vazio.", status=400)
+            user = self.client.db.user.find_one({
+                "email": email
+            })
             
+            
+            if user is not None:
+                return jsonify(message="O usuário já existe", status=404)
+
+            if email == '':
+                return jsonify(message="E-mail não pode ser vazio.", status=400)
+
             if username == '':
-                return jsonify("Usuário não pode ser vazio.", status=400)
+                return jsonify(message="Usuário não pode ser vazio.", status=400)
 
             if password == '':
-                return jsonify("Senha não pode ser vazia.", status=400)  
+                return jsonify(message="Senha não pode ser vazia.", status=400)
 
             self.client.db.user.insert_one(
                 {'email': email, 'username': username, 'password': password}
