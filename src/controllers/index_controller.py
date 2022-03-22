@@ -19,7 +19,7 @@ class IndexController:
         def index():
             return jsonify({'message': 'Hello, World!'})
 
-        @self.app.route('/user', methods=['POST'])
+        @self.app.route('/cadastro', methods=['POST'])
         def save_user():
             email = request.get_json().get('email')
             username = request.get_json().get('username')
@@ -47,18 +47,28 @@ class IndexController:
             )
 
             return jsonify({
-                'message': 'User saved successfully',
+                'message': 'Usuário salvo',
+            }, status=200)
+
+        @self.app.route('/login', methods =['POST'])
+        def login():
+            email = request.get_json().get('email')
+            password = request.get_json().get('password')
+            
+            user = self.client.db.user.find_one({
+                "email": email
             })
+            
+            if user is not None:
+                return jsonify(message="Esse Usuário não existe")
 
-        @self.app.route('/users', methods=['GET'])
-        def get_users():
-            users = self.client.db.user.find({})
-
-            users_response = [
-                self.format_data(user) for user in users
-            ]
-
+            if user.password != password:
+                return jsonify(message="Não foi possível logar com esses dados",status=400)
+            
             return jsonify({
-                'message': 'Users retrieved successfully',
-                'data': users_response,
-            })
+                'message':'Login concluido',
+            }, status=200)
+
+
+            
+   
