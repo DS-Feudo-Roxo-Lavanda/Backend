@@ -31,7 +31,7 @@ class IndexController:
             
             
             if user is not None:
-                return jsonify(message="O usuário já existe", status=404)
+                return jsonify(message="O usuário já existe.", status=404)
 
             if email == '':
                 return jsonify(message="E-mail não pode ser vazio.", status=400)
@@ -46,9 +46,7 @@ class IndexController:
                 {'email': email, 'username': username, 'password': password}
             )
 
-            return jsonify({
-                'message': 'Usuário salvo',
-            }, status=200)
+            return jsonify(message="Cadastro concluído!", status=200)
 
         @self.app.route('/login', methods =['POST'])
         def login():
@@ -58,16 +56,14 @@ class IndexController:
             user = self.client.db.user.find_one({
                 "email": email
             })
-            
-            if user is not None:
-                return jsonify(message="Esse Usuário não existe")
 
-            if user.password != password:
-                return jsonify(message="Não foi possível logar com esses dados",status=400)
+            if email == '' or password == '':
+                return jsonify(message="Preencha todos os campos.",status=400)
+           
+            elif user is None or user["password"] != password:
+                return jsonify(message="Usuário ou senha incorretos.",status=400)
             
-            return jsonify({
-                'message':'Login concluido',
-            }, status=200)
+            return jsonify(message="Login concluído!", status=200)
 
 
             
