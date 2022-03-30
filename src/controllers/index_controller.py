@@ -1,9 +1,8 @@
-from telnetlib import STATUS
 from src.utils.CustomEnconder import CustomEncoder
 from flask import jsonify, request
-from bson.json_util import dumps
+from bson.objectid import ObjectId
 import json
-
+ 
 
 class IndexController:
     def __init__(self, app, client):
@@ -48,7 +47,7 @@ class IndexController:
 
             return jsonify(message="Cadastro concluído!", status=200)
 
-        @self.app.route('/login', methods =['POST'])
+        @self.app.route('/login', methods=['POST'])
         def login():
             email = request.get_json().get('email')
             password = request.get_json().get('password')
@@ -64,7 +63,36 @@ class IndexController:
                 return jsonify(message="Usuário ou senha incorretos.",status=400)
             
             return jsonify(message="Login concluído!", status=200)
-
-
+        
+        #Mudanças de hj
+        @self.app.route('/meus-shows', methods=['GET'])
+        def lista_de_filmes():
+            lista = []
+            string_id = request.get_json().get('user_id')
             
-   
+            filmes = self.client.db.user.find({
+                "user_id": ObjectId(string_id)
+            })
+
+            for i in filmes:
+                lista.append(i)
+            
+            if len(lista) == 0:
+                return jsonify(message="Nenhum filme encontrado", status=200)
+            
+            return jsonify(meus_shows=lista)
+            
+
+        @self.app.route('/adicionar/filme', methods=['POST'])
+        def adicionar_filme():    
+            string_id = request.get_json().get('user_id')
+            filme = request.get_json().get('filme')
+
+            if filme == '':
+                return jsonify(message="Insira um filme", status=400)
+            
+            self.client.db.user.insert_one(
+                {'user_id': ObjectId(string_id), 'filme': filme}
+            )
+
+            return jsonify(message="FIlme adicionado!", status=200)
