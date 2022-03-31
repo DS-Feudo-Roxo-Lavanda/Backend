@@ -18,6 +18,7 @@ class IndexController:
         def index():
             return jsonify({'message': 'Hello, World!'})
 
+
         @self.app.route('/cadastro', methods=['POST'])
         def save_user():
             email = request.get_json().get('email')
@@ -27,17 +28,14 @@ class IndexController:
             user = self.client.db.user.find_one({
                 "email": email
             })
-            
-            
+
             if user is not None:
                 return jsonify(message="O usuário já existe.", status=404)
-
+            
             if email == '':
                 return jsonify(message="E-mail não pode ser vazio.", status=400)
-
             if username == '':
                 return jsonify(message="Usuário não pode ser vazio.", status=400)
-
             if password == '':
                 return jsonify(message="Senha não pode ser vazia.", status=400)
 
@@ -46,6 +44,7 @@ class IndexController:
             )
 
             return jsonify(message="Cadastro concluído!", status=200)
+
 
         @self.app.route('/login', methods=['POST'])
         def login():
@@ -64,35 +63,33 @@ class IndexController:
             
             return jsonify(message="Login concluído!", status=200)
         
-        #Mudanças de hj
-        @self.app.route('/meus-shows', methods=['GET'])
-        def lista_de_filmes():
+
+        @self.app.route('/meus-shows/<tipo>', methods=['GET']) # tipo -> filme, serie ou favorito
+        def lista_de_filmes(tipo):
+            string_id = request.get_json().get('user_id')
+            
+            objetos = self.client.db.user.find({
+                    "user_id": ObjectId(string_id), 
+                })
+            
             lista = []
+            for i in objetos:
+                if list(i)[2] == str(tipo):
+                    lista.append(i[str(tipo)])
+
+            if len(lista) != 0:    
+                    return jsonify(requisicao=lista)
+            else:
+                return jsonify(message=f"Nenhum(a) {tipo} encontrado(a).", status=400)
+            
+
+        @self.app.route('/adicionar/<tipo>', methods=['POST']) # tipo -> filme, serie ou favorito
+        def adicionar_filme(tipo):    
             string_id = request.get_json().get('user_id')
-            
-            filmes = self.client.db.user.find({
-                "user_id": ObjectId(string_id)
-            })
-
-            for i in filmes:
-                lista.append(i)
-            
-            if len(lista) == 0:
-                return jsonify(message="Nenhum filme encontrado", status=200)
-            
-            return jsonify(meus_shows=lista)
-            
-
-        @self.app.route('/adicionar/filme', methods=['POST'])
-        def adicionar_filme():    
-            string_id = request.get_json().get('user_id')
-            filme = request.get_json().get('filme')
-
-            if filme == '':
-                return jsonify(message="Insira um filme", status=400)
+            json_show = request.get_json().get('objeto')
             
             self.client.db.user.insert_one(
-                {'user_id': ObjectId(string_id), 'filme': filme}
+                {'user_id': ObjectId(string_id), str(tipo): json_show}
             )
 
-            return jsonify(message="FIlme adicionado!", status=200)
+            return jsonify(message=f"{str(tipo).capitalize()} adicionado(a)!", status=200)
