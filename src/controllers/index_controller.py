@@ -1,7 +1,11 @@
 from src.utils.CustomEnconder import CustomEncoder
+from app import token_req
 from flask import jsonify, request
 from bson.objectid import ObjectId
 import json
+from datetime import datetime, timedelta
+import jwt
+from werkzeug.security import generate_password_hash, check_password_hash
  
 
 class IndexController:
@@ -40,7 +44,7 @@ class IndexController:
                 return jsonify(message="Senha não pode ser vazia.", status=400)
 
             self.client.db.user.insert_one(
-                {'email': email, 'username': username, 'password': password}
+                {'email': email, 'username': username, 'password': generate_password_hash(password)}
             )
 
             return jsonify(message="Cadastro concluído!", status=200)
@@ -58,13 +62,23 @@ class IndexController:
             if email == '' or password == '':
                 return jsonify(message="Preencha todos os campos.",status=400)
            
-            elif user is None or user["password"] != password:
+            elif user is None or not check_password_hash(user["password"], password):
                 return jsonify(message="Usuário ou senha incorretos.",status=400)
             
+            time = datetime.utcnow() + timedelta(minutes=30)
+            token = jwt.encode({
+                    "user": {
+                        "email": f"{user['email']}",
+                        "id": f"{user['_id']}",
+                    },
+                    "exp": time
+                },"SECRET_KEY")
+
             return jsonify(message="Login concluído!", status=200)
         
 
         @self.app.route('/meus-shows/<tipo>', methods=['GET']) # tipo -> filme, serie ou favorito
+        @token_req
         def lista_de_filmes(tipo):
             string_id = request.get_json().get('user_id')
             
@@ -84,6 +98,7 @@ class IndexController:
             
 
         @self.app.route('/adicionar/<tipo>', methods=['POST']) # tipo -> filme, serie ou favorito
+        @token_req
         def adicionar_filme(tipo):    
             string_id = request.get_json().get('user_id')
             json_show = request.get_json().get('objeto')
