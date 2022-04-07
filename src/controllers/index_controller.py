@@ -1,12 +1,29 @@
+from cmath import exp
+from functools import wraps
 from src.utils.CustomEnconder import CustomEncoder
-from app import token_req
 from flask import jsonify, request
 from bson.objectid import ObjectId
-import json
-from datetime import datetime, timedelta
-import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
- 
+from datetime import datetime, timedelta
+import json
+import jwt 
+
+def token_req(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+
+        if not token:
+            return jsonify(message='Token necessário', status=401)
+        
+        try:
+            data = jwt.decode(token, 'RoxoLavanda', "HS256")
+        except:
+            return jsonify(message='Token inválido.', status=403)
+
+        return f(*args,**kwargs)
+
+    return decorated
 
 class IndexController:
     def __init__(self, app, client):
@@ -55,26 +72,26 @@ class IndexController:
             email = request.get_json().get('email')
             password = request.get_json().get('password')
             
+            if email == '' or password == '':
+                return jsonify(message="Preencha todos os campos.",status=400)
+            
             user = self.client.db.user.find_one({
                 "email": email
             })
 
-            if email == '' or password == '':
-                return jsonify(message="Preencha todos os campos.",status=400)
-           
-            elif user is None or not check_password_hash(user["password"], password):
+            if user is None or not check_password_hash(user["password"], password):
                 return jsonify(message="Usuário ou senha incorretos.",status=400)
             
-            time = datetime.utcnow() + timedelta(minutes=30)
+            exp_time = datetime.utcnow() + timedelta(minutes=30)
+
             token = jwt.encode({
                     "user": {
                         "email": f"{user['email']}",
                         "id": f"{user['_id']}",
-                    },
-                    "exp": time
-                },"SECRET_KEY")
+                    },"exp": exp_time
+                    }, 'RoxoLavanda')
 
-            return jsonify(message="Login concluído!", status=200)
+            return jsonify(message="Login concluído!", token=token, status=200)
         
 
         @self.app.route('/meus-shows/<tipo>', methods=['GET']) # tipo -> filme, serie ou favorito
