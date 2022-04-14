@@ -1,16 +1,20 @@
 import os
 from src.utils.CustomEnconder import CustomEncoder
+from src.utils.constantes import USUARIO_MONGO, SENHA_MONGO, DB_MONGO, CLUSTER_MONGO
 from src.controllers.index_controller import IndexController
+from flask_cors import CORS
 from flask import Flask
 import pymongo
 
 app = Flask(__name__)
 
+cors = CORS(app, resources={r"*": {"origins": "*"}})
+
 app.json_encoder = CustomEncoder
 
 connect_uri = os.environ.get('MONGO_URI') if os.environ.get(
     'MONGO_URI'
-) else "mongodb+srv://gmarcelino:<password>@cluster0.qyeja.mongodb.net/myFirstDatabase?retryWrites=true&w=majority" #'mongodb://admin:admin@mongo-db:27017/moviesmanager?authSource=admin'
+) else f"mongodb+srv://{USUARIO_MONGO}:{SENHA_MONGO}@{CLUSTER_MONGO}.mongodb.net/{DB_MONGO}?retryWrites=true&w=majority" #'mongodb://admin:admin@mongo-db:27017/moviesmanager?authSource=admin'
 
 client = pymongo.MongoClient(connect_uri, serverSelectionTimeoutMS=30000)
 
