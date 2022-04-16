@@ -7,25 +7,25 @@ from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import json
-import jwt
+# import jwt
 
 # Autenticador JWT
-def token_req(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.args.get('token')
+# def token_req(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         token = request.args.get('token')
 
-        if not token:
-            return jsonify(message='Token necessário', status=401)
+#         if not token:
+#             return jsonify(message='Token necessário', status=401)
         
-        try:
-            data = jwt.decode(token, SECRET_KEY, "HS256")
-        except:
-            return jsonify(message='Token inválido.', status=403)
+#         try:
+#             data = jwt.decode(token, SECRET_KEY, "HS256")
+#         except:
+#             return jsonify(message='Token inválido.', status=403)
 
-        return f(*args,**kwargs)
+#         return f(*args,**kwargs)
 
-    return decorated
+#     return decorated
 
 class IndexController:
     def __init__(self, app, client):
@@ -89,19 +89,19 @@ class IndexController:
             
             exp_time = datetime.utcnow() + timedelta(minutes=30)
 
-            token = jwt.encode({
-                    "user": {
-                        "email": f"{user['email']}",
-                        "id": f"{user['_id']}",
-                    },"exp": exp_time
-                    }, SECRET_KEY)
+            # token = jwt.encode({
+            #         "user": {
+            #             "email": f"{user['email']}",
+            #             "id": f"{user['_id']}",
+            #         },"exp": exp_time
+            #         }, SECRET_KEY)
 
-            return jsonify(message="Login concluído!", token=token, status=200)
+            return jsonify(message="Login concluído!", status=200)
         
         # Rota que retorna os Meus Shows, do tipo solicitada
         @self.app.route('/meus-shows/<tipo>', methods=['GET'])# tipo="filmes","series","favoritos"
         @cross_origin(origins='*')
-        @token_req
+        # @token_req
         def meus_shows(tipo):
             string_id = request.get_json().get('user_id')
             
@@ -159,7 +159,7 @@ class IndexController:
         # Rota que retorna os estados de um filme/série específico
         @self.app.route('/<tipo>/<tmdb_id>', methods=['GET']) # tipo="filme","serie" | tmdb_id=id do filme/série
         @cross_origin(origins='*')
-        @token_req
+        # @token_req
         def especifico(tipo, tmdb_id):
             string_id = request.get_json().get('user_id')
 
@@ -192,7 +192,7 @@ class IndexController:
         # Rota que atualiza o estado atual do filme, ou adiciona-o ao banco caso não estivesse
         @self.app.route('/<tipo>/<tmdb_id>/atualizar/<estado>', methods=['POST']) # tipo="filme","serie" | tmdb_id=id do filme/série | estado="assistido","nao_assistido","favorito"
         @cross_origin(origins='*')
-        @token_req
+        # @token_req
         def atualizar(tipo, tmdb_id, estado):
             string_id = request.get_json().get('user_id')
             
