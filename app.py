@@ -8,7 +8,13 @@ import pymongo
 
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"*": {"origins": "*"}})
+cors = CORS(app, resource={
+    r"/*":{
+        "origins":"*"
+    }
+})
+
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.json_encoder = CustomEncoder
 
