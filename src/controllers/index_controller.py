@@ -1,5 +1,6 @@
 from functools import wraps
 from src.utils.CustomEnconder import CustomEncoder
+from flask_cors import cross_origin
 from src.utils.constantes import SECRET_KEY
 from flask import jsonify, request
 from bson.objectid import ObjectId
@@ -37,11 +38,13 @@ class IndexController:
 
     def routes(self):
         @self.app.route('/', methods=['GET'])
+        @cross_origin(origins='*')
         def index():
             return jsonify({'message': 'Hello, World!'})
 
         # Rota de cadastro de usuário
         @self.app.route('/cadastro', methods=['POST'])
+        @cross_origin(origins='*')
         def save_user():
             email = request.get_json().get('email').strip()
             username = request.get_json().get('username').strip()
@@ -69,6 +72,7 @@ class IndexController:
 
         # Rota de login do usuário
         @self.app.route('/login', methods=['POST'])
+        @cross_origin(origins='*')
         def login():
             email = request.get_json().get('email')
             password = request.get_json().get('password')
@@ -96,6 +100,7 @@ class IndexController:
         
         # Rota que retorna os Meus Shows, do tipo solicitada
         @self.app.route('/meus-shows/<tipo>', methods=['GET'])# tipo="filmes","series","favoritos"
+        @cross_origin(origins='*')
         @token_req
         def meus_shows(tipo):
             string_id = request.get_json().get('user_id')
@@ -153,6 +158,7 @@ class IndexController:
 
         # Rota que retorna os estados de um filme/série específico
         @self.app.route('/<tipo>/<tmdb_id>', methods=['GET']) # tipo="filme","serie" | tmdb_id=id do filme/série
+        @cross_origin(origins='*')
         @token_req
         def especifico(tipo, tmdb_id):
             string_id = request.get_json().get('user_id')
@@ -185,6 +191,7 @@ class IndexController:
 
         # Rota que atualiza o estado atual do filme, ou adiciona-o ao banco caso não estivesse
         @self.app.route('/<tipo>/<tmdb_id>/atualizar/<estado>', methods=['POST']) # tipo="filme","serie" | tmdb_id=id do filme/série | estado="assistido","nao_assistido","favorito"
+        @cross_origin(origins='*')
         @token_req
         def atualizar(tipo, tmdb_id, estado):
             string_id = request.get_json().get('user_id')
