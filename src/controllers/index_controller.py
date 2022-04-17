@@ -70,6 +70,13 @@ class IndexController:
 
             return jsonify(message="Cadastro concluído!", status=200)
 
+        @self.app.route('/get-all-users', methods=['GET'])
+        @cross_origin(origins='*')
+        def users():
+            users = self.client.db.user.find()
+
+            return jsonify([self.format_data(user) for user in users])
+
         # Rota de login do usuário
         @self.app.route('/login', methods=['POST'])
         @cross_origin(origins='*')
@@ -87,7 +94,7 @@ class IndexController:
             if user is None or not check_password_hash(user["password"], password):
                 return jsonify(message="Usuário ou senha incorretos.",status=400)
             
-            exp_time = datetime.utcnow() + timedelta(minutes=30)
+            # exp_time = datetime.utcnow() + timedelta(minutes=30)
 
             # token = jwt.encode({
             #         "user": {
@@ -96,14 +103,14 @@ class IndexController:
             #         },"exp": exp_time
             #         }, SECRET_KEY)
 
-            return jsonify(message="Login concluído!", status=200)
+            return jsonify(user=self.format_data(user), status=200)
         
         # Rota que retorna os Meus Shows, do tipo solicitada
         @self.app.route('/meus-shows/<tipo>', methods=['GET'])# tipo="filmes","series","favoritos"
         @cross_origin(origins='*')
         # @token_req
         def meus_shows(tipo):
-            string_id = request.get_json().get('user_id')
+            string_id = request.args.get('user_id')
             
             user = self.client.db.user.find_one(
                 {'_id': ObjectId(string_id)})
@@ -161,7 +168,7 @@ class IndexController:
         @cross_origin(origins='*')
         # @token_req
         def especifico(tipo, tmdb_id):
-            string_id = request.get_json().get('user_id')
+            string_id = request.args.get('user_id')
 
             user = self.client.db.user.find_one(
                 {'_id': ObjectId(string_id)})
@@ -202,6 +209,7 @@ class IndexController:
             if user is None:
                 return jsonify(message="Usuário não existe", status=400)
             
+            objeto = {}
             if tipo == "serie":
                 objeto = self.client.db.series.find_one(
                     {'user_id': ObjectId(string_id), "tmdb_id": int(tmdb_id)}
@@ -215,7 +223,7 @@ class IndexController:
                             "assistido": False,
                             "nao_assistido": False,
                             "favorito": False
-                        }
+                    }
                     self.client.db.series.insert_one(objeto)                    
             
             if tipo == "filme":
@@ -232,7 +240,7 @@ class IndexController:
                             "assistido": False,
                             "nao_assistido": False,
                             "favorito": False
-                        }
+                    }
                     self.client.db.filmes.insert_one(objeto)
                     
             
